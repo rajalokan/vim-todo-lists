@@ -24,10 +24,17 @@
 " Initializes plugin settings and mappings
 function! VimTodoListsInit()
   set filetype=todo
+  set foldlevel=99
   setlocal tabstop=2
   setlocal shiftwidth=2 expandtab
   setlocal cursorline
   setlocal noautoindent
+  colorscheme todo
+
+  nmap <leader>t-1 :vs yesterday.todo<cr>
+  nmap <leader>t1 :vs tomorrow.todo<cr>
+  nmap <leader>later :vs later.todo<cr>
+  nmap <leader>wish :vs wishlist.todo<cr>
 
   if exists('g:VimTodoListsCustomKeyMapper')
     try
@@ -50,6 +57,35 @@ function! VimTodoListsSetItemDone(lineno)
   call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[X]', ''))
 endfunction
 
+" Sets the item later
+function! VimTodoListsSetItemLater(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[L]', ''))
+endfunction
+
+" Sets the item wishlist
+function! VimTodoListsSetItemWishlist(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[W]', ''))
+endfunction
+
+" Sets the item notes
+function! VimTodoListsSetItemNotes(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[N]', ''))
+endfunction
+
+" Sets the item Question
+function! VimTodoListsSetItemQuestion(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[?]', ''))
+endfunction
+
+" Sets the item Tomorrow
+function! VimTodoListsSetItemTomorrow(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[>]', ''))
+endfunction
 
 " Sets the item not done
 function! VimTodoListsSetItemNotDone(lineno)
@@ -57,6 +93,35 @@ function! VimTodoListsSetItemNotDone(lineno)
   call setline(a:lineno, substitute(l:line, '^\(\s*\)\[X\]', '\1[ ]', ''))
 endfunction
 
+" Sets the item not later
+function! VimTodoListsSetItemNotLater(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[L\]', '\1[ ]', ''))
+endfunction
+
+" Sets the item not wishlist
+function! VimTodoListsSetItemNotWishlist(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[W\]', '\1[ ]', ''))
+endfunction
+
+" Sets the item not notes
+function! VimTodoListsSetItemNotNotes(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[N\]', '\1[ ]', ''))
+endfunction
+
+" Sets the item not question
+function! VimTodoListsSetItemNotQuestion(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[?\]', '\1[ ]', ''))
+endfunction
+
+" Sets the item not tomorrow
+function! VimTodoListsSetItemNotTomorrow(lineno)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '^\(\s*\)\[>\]', '\1[ ]', ''))
+endfunction
 
 " Checks that line is a todo list item
 function! VimTodoListsLineIsItem(line)
@@ -67,16 +132,14 @@ function! VimTodoListsLineIsItem(line)
   return 0
 endfunction
 
-
 " Checks that item is not done
-function! VimTodoListsItemIsNotDone(line)
+function! VimTodoListsItemIsNotMarked(line)
   if match(a:line, '^\s*\[ \].*') != -1
     return 1
   endif
 
   return 0
 endfunction
-
 
 " Checks that item is done
 function! VimTodoListsItemIsDone(line)
@@ -87,6 +150,50 @@ function! VimTodoListsItemIsDone(line)
   return 0
 endfunction
 
+" Checks that item is later
+function! VimTodoListsItemIsLater(line)
+  if match(a:line, '^\s*\[L\].*') != -1
+    return 1
+  endif
+
+  return 0
+endfunction
+
+" Checks that item is wishlist
+function! VimTodoListsItemIsWishlist(line)
+  if match(a:line, '^\s*\[W\].*') != -1
+    return 1
+  endif
+
+  return 0
+endfunction
+
+" Checks that item is notes
+function! VimTodoListsItemIsNotes(line)
+  if match(a:line, '^\s*\[N\].*') != -1
+    return 1
+  endif
+
+  return 0
+endfunction
+
+" Checks that item is question
+function! VimTodoListsItemIsQuestion(line)
+  if match(a:line, '^\s*\[?\].*') != -1
+    return 1
+  endif
+
+  return 0
+endfunction
+
+" Checks that item is question
+function! VimTodoListsItemIsTomorrow(line)
+  if match(a:line, '^\s*\[>\].*') != -1
+    return 1
+  endif
+
+  return 0
+endfunction
 
 " Returns the line number of the brother item in specified range
 function! VimTodoListsBrotherItemInRange(line, range)
@@ -261,36 +368,36 @@ function! VimTodoListsFindLastChild(lineno)
 endfunction
 
 
-" Marks the parent done if all children are done
-function! VimTodoListsUpdateParent(lineno)
-  let l:parent_lineno = VimTodoListsFindParent(a:lineno)
-
-  " No parent item
-  if l:parent_lineno == -1
-    return
-  endif
-
-  let l:last_child_lineno = VimTodoListsFindLastChild(l:parent_lineno)
-
-  " There is no children
-  if l:last_child_lineno == l:parent_lineno
-    return
-  endif
-
-  for current_line in range(l:parent_lineno + 1, l:last_child_lineno)
-    if VimTodoListsItemIsNotDone(getline(current_line)) == 1
-      " Not all children are done
-      call VimTodoListsSetItemNotDone(l:parent_lineno)
-      call VimTodoListsMoveSubtreeUp(l:parent_lineno)
-      call VimTodoListsUpdateParent(l:parent_lineno)
-      return
-    endif
-  endfor
-
-  call VimTodoListsSetItemDone(l:parent_lineno)
-  call VimTodoListsMoveSubtreeDown(l:parent_lineno)
-  call VimTodoListsUpdateParent(l:parent_lineno)
-endfunction
+" " Marks the parent done if all children are done
+" function! VimTodoListsUpdateParent(lineno)
+"   let l:parent_lineno = VimTodoListsFindParent(a:lineno)
+"
+"   " No parent item
+"   if l:parent_lineno == -1
+"     return
+"   endif
+"
+"   let l:last_child_lineno = VimTodoListsFindLastChild(l:parent_lineno)
+"
+"   " There is no children
+"   if l:last_child_lineno == l:parent_lineno
+"     return
+"   endif
+"
+"   for current_line in range(l:parent_lineno + 1, l:last_child_lineno)
+"     if VimTodoListsItemIsNotDone(getline(current_line)) == 1
+"       " Not all children are done
+"       call VimTodoListsSetItemNotDone(l:parent_lineno)
+"       call VimTodoListsMoveSubtreeUp(l:parent_lineno)
+"       call VimTodoListsUpdateParent(l:parent_lineno)
+"       return
+"     endif
+"   endfor
+"
+"   call VimTodoListsSetItemDone(l:parent_lineno)
+"   call VimTodoListsMoveSubtreeDown(l:parent_lineno)
+"   call VimTodoListsUpdateParent(l:parent_lineno)
+" endfunction
 
 
 " Applies the function for each child
@@ -311,20 +418,43 @@ function! VimTodoListsSetNormalMode()
   nunmap <buffer> O
   nunmap <buffer> j
   nunmap <buffer> k
-  nnoremap <buffer> <Space> :VimTodoListsToggleItem<CR>
-  vnoremap <buffer> <Space> :'<,'>VimTodoListsToggleItem<CR>
+  nnoremap <buffer> <leader>td :VimTodoListsToggleItemDone<CR>
+  vnoremap <buffer> <leader>td :'<,'>VimTodoListsToggleItemDone<CR>
+  nnoremap <buffer> <leader>tl:VimTodoListsToggleItemLater<CR>
+  vnoremap <buffer> <leader>tl :'<,'>VimTodoListsToggleItemLater<CR>
+  nnoremap <buffer> <leader>tw:VimTodoListsToggleItemWishlist<CR>
+  vnoremap <buffer> <leader>tw :'<,'>VimTodoListsToggleItemWishlist<CR>
+  nnoremap <buffer> <leader>tn:VimTodoListsToggleItemNotes<CR>
+  vnoremap <buffer> <leader>tn :'<,'>VimTodoListsToggleItemNotes<CR>
+  nnoremap <buffer> <leader>t?:VimTodoListsToggleItemQuestion<CR>
+  vnoremap <buffer> <leader>t? :'<,'>VimTodoListsToggleItemQuestion<CR>
+  nnoremap <buffer> <leader>t>:VimTodoListsToggleItemTomorrow<CR>
+  vnoremap <buffer> <leader>t> :'<,'>VimTodoListsToggleItemTomorrow<CR>
   noremap <buffer> <leader>e :silent call VimTodoListsSetItemMode()<CR>
 endfunction
 
 
 " Sets mappings for faster item navigation and editing
 function! VimTodoListsSetItemMode()
-  nnoremap <buffer> o :VimTodoListsCreateNewItemBelow<CR>
-  nnoremap <buffer> O :VimTodoListsCreateNewItemAbove<CR>
   nnoremap <buffer> j :VimTodoListsGoToNextItem<CR>
   nnoremap <buffer> k :VimTodoListsGoToPreviousItem<CR>
-  nnoremap <buffer> <Space> :VimTodoListsToggleItem<CR>
-  vnoremap <buffer> <Space> :VimTodoListsToggleItem<CR>
+  nnoremap <buffer> o :VimTodoListsCreateNewItemBelow<CR>
+  nnoremap <buffer> O :VimTodoListsCreateNewItemAbove<CR>
+  nnoremap <buffer> <leader>to :VimTodoListsCreateEmptyLineBelow<CR>
+  nnoremap <buffer> <leader>tO :VimTodoListsCreateEmptyLineAbove<CR>
+  nnoremap <buffer> <leader>tc :VimTodoListsCreateNewChildItem<CR>
+  nnoremap <buffer> <leader>td :VimTodoListsToggleItemDone<CR>
+  vnoremap <buffer> <leader>td :VimTodoListsToggleItemDone<CR>
+  nnoremap <buffer> <leader>tl :VimTodoListsToggleItemLater<CR>
+  vnoremap <buffer> <leader>tl :VimTodoListsToggleItemLater<CR>
+  nnoremap <buffer> <leader>tw :VimTodoListsToggleItemWishlist<CR>
+  vnoremap <buffer> <leader>tw :VimTodoListsToggleItemWishlist<CR>
+  nnoremap <buffer> <leader>tn :VimTodoListsToggleItemNotes<CR>
+  vnoremap <buffer> <leader>tn :VimTodoListsToggleItemNotes<CR>
+  nnoremap <buffer> <leader>t? :VimTodoListsToggleItemQuestion<CR>
+  vnoremap <buffer> <leader>t? :VimTodoListsToggleItemQuestion<CR>
+  nnoremap <buffer> <leader>t> :VimTodoListsToggleItemTomorrow<CR>
+  vnoremap <buffer> <leader>t> :VimTodoListsToggleItemTomorrow<CR>
   inoremap <buffer> <CR> <CR><ESC>:VimTodoListsCreateNewItem<CR>
   noremap <buffer> <leader>e :silent call VimTodoListsSetNormalMode()<CR>
 endfunction
@@ -332,21 +462,37 @@ endfunction
 
 " Creates a new item above the current line
 function! VimTodoListsCreateNewItemAbove()
-  normal! O  [ ] 
+  normal! O  [ ]
   startinsert!
 endfunction
 
 
 " Creates a new item below the current line
 function! VimTodoListsCreateNewItemBelow()
-  normal! o  [ ] 
+  normal! o  [ ]
+  startinsert!
+endfunction
+
+" Creates a new empty line above the current line
+function! VimTodoListsCreateEmptyLineAbove()
+  normal! O
+endfunction
+
+" Creates a new empty line below the current line
+function! VimTodoListsCreateEmptyLineBelow()
+  normal! o
+endfunction
+
+" Creates a new child below the current line
+function! VimTodoListsCreateNewChildItem()
+  normal! o      [ ]
   startinsert!
 endfunction
 
 
 " Creates a new item in the current line
 function! VimTodoListsCreateNewItem()
-  normal! 0i  [ ] 
+  normal! 0i  [ ]
   startinsert!
 endfunction
 
@@ -354,38 +500,140 @@ endfunction
 " Moves the cursor to the next item
 function! VimTodoListsGoToNextItem()
   normal! $
-  silent! exec '/^\s*\[.\]'
+  " exec '/^\s*\[.\]'
+  exec '/^\s*'
   silent! exec 'noh'
-  normal! l
+  normal! lll
 endfunction
 
 
 " Moves the cursor to the previous item
 function! VimTodoListsGoToPreviousItem()
   normal! 0
-  silent! exec '?^\s*\[.\]'
+  " silent! exec '?^\s*\[.\]'
+  silent! exec '?^\s*'
   silent! exec 'noh'
-  normal! l
+  normal! lll
 endfunction
 
 
-" Toggles todo list item
-function! VimTodoListsToggleItem()
+" Toggles todo list item done
+function! VimTodoListsToggleItemDone()
   let l:line = getline('.')
   let l:lineno = line('.')
 
   " Store current cursor position
   let l:cursor_pos = getcurpos()
 
-  if VimTodoListsItemIsNotDone(l:line) == 1
+  if VimTodoListsItemIsNotMarked(l:line) == 1
     call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemDone')
-    call VimTodoListsMoveSubtreeDown(l:lineno)
+    " call VimTodoListsMoveSubtreeDown(l:lineno)
   elseif VimTodoListsItemIsDone(l:line) == 1
     call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotDone')
-    call VimTodoListsMoveSubtreeUp(l:lineno)
+    " call VimTodoListsMoveSubtreeUp(l:lineno)
   endif
 
-  call VimTodoListsUpdateParent(l:lineno)
+  " call VimTodoListsUpdateParent(l:lineno)
+
+  " Restore the current position
+  " Using the {curswant} value to set the proper column
+  call cursor(l:cursor_pos[1], l:cursor_pos[4])
+endfunction
+
+" Toggles todo list item Later
+function! VimTodoListsToggleItemLater()
+  let l:line = getline('.')
+  let l:lineno = line('.')
+
+  " Store current cursor position
+  let l:cursor_pos = getcurpos()
+
+  if VimTodoListsItemIsNotMarked(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemLater')
+    " call VimTodoListsMoveSubtreeDown(l:lineno)
+  elseif VimTodoListsItemIsLater(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotLater')
+    " call VimTodoListsMoveSubtreeUp(l:lineno)
+  endif
+
+  " call VimTodoListsUpdateParent(l:lineno)
+
+  " Restore the current position
+  " Using the {curswant} value to set the proper column
+  call cursor(l:cursor_pos[1], l:cursor_pos[4])
+endfunction
+
+" Toggles todo list item wishlist
+function! VimTodoListsToggleItemWishlist()
+  let l:line = getline('.')
+  let l:lineno = line('.')
+
+  " Store current cursor position
+  let l:cursor_pos = getcurpos()
+
+  if VimTodoListsItemIsNotMarked(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemWishlist')
+  elseif VimTodoListsItemIsWishlist(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotWishlist')
+  endif
+
+
+  " Restore the current position
+  " Using the {curswant} value to set the proper column
+  call cursor(l:cursor_pos[1], l:cursor_pos[4])
+endfunction
+
+" Toggles todo list item notes
+function! VimTodoListsToggleItemNotes()
+  let l:line = getline('.')
+  let l:lineno = line('.')
+
+  " Store current cursor position
+  let l:cursor_pos = getcurpos()
+
+  if VimTodoListsItemIsNotMarked(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotes')
+  elseif VimTodoListsItemIsNotes(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotNotes')
+  endif
+
+  " Restore the current position
+  " Using the {curswant} value to set the proper column
+  call cursor(l:cursor_pos[1], l:cursor_pos[4])
+endfunction
+
+" Toggles todo list item question
+function! VimTodoListsToggleItemQuestion()
+  let l:line = getline('.')
+  let l:lineno = line('.')
+
+  " Store current cursor position
+  let l:cursor_pos = getcurpos()
+
+  if VimTodoListsItemIsNotMarked(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemQuestion')
+  elseif VimTodoListsItemIsQuestion(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotQuestion')
+  endif
+
+  " Restore the current position
+  " Using the {curswant} value to set the proper column
+  call cursor(l:cursor_pos[1], l:cursor_pos[4])
+endfunction
+
+" Toggles todo list item tomorrow
+function! VimTodoListsToggleItemTomorrow()
+  let l:line = getline('.')
+  let l:lineno = line('.')
+
+  " Store current cursor position
+  let l:cursor_pos = getcurpos()
+
+  if VimTodoListsItemIsNotMarked(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemTomorrow')
+  elseif VimTodoListsItemIsTomorrow(l:line) == 1
+    call VimTodoListsForEachChild(l:lineno, 'VimTodoListsSetItemNotTomorrow')
+  endif
 
   " Restore the current position
   " Using the {curswant} value to set the proper column
@@ -411,9 +659,18 @@ if !exists('g:vimtodolists_plugin')
   "Defining plugin commands
   command! VimTodoListsCreateNewItemAbove silent call VimTodoListsCreateNewItemAbove()
   command! VimTodoListsCreateNewItemBelow silent call VimTodoListsCreateNewItemBelow()
+
+  command! VimTodoListsCreateEmptyLineAbove silent call VimTodoListsCreateEmptyLineAbove()
+  command! VimTodoListsCreateEmptyLineBelow silent call VimTodoListsCreateEmptyLineBelow()
+
+  command! VimTodoListsCreateNewChildItem silent call VimTodoListsCreateNewChildItem()
   command! VimTodoListsCreateNewItem silent call VimTodoListsCreateNewItem()
   command! VimTodoListsGoToNextItem silent call VimTodoListsGoToNextItem()
   command! VimTodoListsGoToPreviousItem silent call VimTodoListsGoToPreviousItem()
-  command! -range VimTodoListsToggleItem silent <line1>,<line2>call VimTodoListsToggleItem()
+  command! -range VimTodoListsToggleItemDone silent <line1>,<line2>call VimTodoListsToggleItemDone()
+  command! -range VimTodoListsToggleItemLater silent <line1>,<line2>call VimTodoListsToggleItemLater()
+  command! -range VimTodoListsToggleItemWishlist silent <line1>,<line2>call VimTodoListsToggleItemWishlist()
+  command! -range VimTodoListsToggleItemNotes silent <line1>,<line2>call VimTodoListsToggleItemNotes()
+  command! -range VimTodoListsToggleItemQuestion silent <line1>,<line2>call VimTodoListsToggleItemQuestion()
+  command! -range VimTodoListsToggleItemTomorrow silent <line1>,<line2>call VimTodoListsToggleItemTomorrow()
 endif
-
