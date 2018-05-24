@@ -63,6 +63,11 @@ function! VimTodoListsSetItemLater(lineno)
   call setline(a:lineno, substitute(l:line, '^\(\s*\)\[ \]', '\1[L]', ''))
 endfunction
 
+function! ChangeLabel(lineno, label)
+  let l:line = getline(a:lineno)
+  call setline(a:lineno, substitute(l:line, '@\w*', a:label, ''))
+endfunction
+
 " Sets the item wishlist
 function! VimTodoListsSetItemWishlist(lineno)
   let l:line = getline(a:lineno)
@@ -139,6 +144,11 @@ function! VimTodoListsItemIsNotMarked(line)
   endif
 
   return 0
+endfunction
+
+" Returns label of a task
+function! GetItemLabel(line)
+  return matchstr(a:line, '@\w*')
 endfunction
 
 " Checks that item is done
@@ -440,6 +450,12 @@ function! VimTodoListsSetItemMode()
   nnoremap <buffer> k :VimTodoListsGoToPreviousItem<CR>
   nnoremap <buffer> o :VimTodoListsCreateNewItemBelow<CR>
   nnoremap <buffer> O :VimTodoListsCreateNewItemAbove<CR>
+
+  nnoremap <buffer> <leader>lw :VimTodoListsSetLabelWork<CR>
+  nnoremap <buffer> <leader>lo :VimTodoListsSetLabelOSS<CR>
+  nnoremap <buffer> <leader>lp :VimTodoListsSetLabelPersonal<CR>
+  nnoremap <buffer> <leader>lh :VimTodoListsSetLabelHousehold<CR>
+
   nnoremap <buffer> <leader>to :VimTodoListsCreateEmptyLineBelow<CR>
   nnoremap <buffer> <leader>tO :VimTodoListsCreateEmptyLineAbove<CR>
   nnoremap <buffer> <leader>tc :VimTodoListsCreateNewChildItem<CR>
@@ -541,6 +557,20 @@ function! VimTodoListsToggleItemDone()
   " Using the {curswant} value to set the proper column
   call cursor(l:cursor_pos[1], l:cursor_pos[4])
 endfunction
+
+function! VimTodoListsSetLabel(label)
+  let l:line = getline('.')
+  let l:lineno = line('.')
+
+  let l:cursor_pos = getcurpos()
+
+  if GetItemLabel(l:line) != a:label
+    call ChangeLabel(l:lineno, a:label)
+  endif
+
+  call cursor(l:cursor_pos[1], l:cursor_pos[4])
+endfunction
+
 
 " Toggles todo list item Later
 function! VimTodoListsToggleItemLater()
@@ -671,6 +701,11 @@ if !exists('g:vimtodolists_plugin')
 
   command! VimTodoListsGoToNextItem silent call VimTodoListsGoToNextItem()
   command! VimTodoListsGoToPreviousItem silent call VimTodoListsGoToPreviousItem()
+
+  command! VimTodoListsSetLabelWork silent call VimTodoListsSetLabel('@work')
+  command! VimTodoListsSetLabelOSS silent call VimTodoListsSetLabel('@oss')
+  command! VimTodoListsSetLabelPersonal silent call VimTodoListsSetLabel('@personal')
+  command! VimTodoListsSetLabelHousehold silent call VimTodoListsSetLabel('@household')
 
   command! -range VimTodoListsToggleItemDone silent <line1>,<line2>call VimTodoListsToggleItemDone()
   command! -range VimTodoListsToggleItemLater silent <line1>,<line2>call VimTodoListsToggleItemLater()
