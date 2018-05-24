@@ -462,14 +462,16 @@ endfunction
 
 " Creates a new item above the current line
 function! VimTodoListsCreateNewItemAbove()
-  normal! O  [ ]
+  normal! O  [ ]   @work
+  normal! 06l
   startinsert!
 endfunction
 
 
 " Creates a new item below the current line
 function! VimTodoListsCreateNewItemBelow()
-  normal! o  [ ]
+  normal! o  [ ]   @work
+  normal! 06l
   startinsert!
 endfunction
 
@@ -664,9 +666,12 @@ if !exists('g:vimtodolists_plugin')
   command! VimTodoListsCreateEmptyLineBelow silent call VimTodoListsCreateEmptyLineBelow()
 
   command! VimTodoListsCreateNewChildItem silent call VimTodoListsCreateNewChildItem()
+
   command! VimTodoListsCreateNewItem silent call VimTodoListsCreateNewItem()
+
   command! VimTodoListsGoToNextItem silent call VimTodoListsGoToNextItem()
   command! VimTodoListsGoToPreviousItem silent call VimTodoListsGoToPreviousItem()
+
   command! -range VimTodoListsToggleItemDone silent <line1>,<line2>call VimTodoListsToggleItemDone()
   command! -range VimTodoListsToggleItemLater silent <line1>,<line2>call VimTodoListsToggleItemLater()
   command! -range VimTodoListsToggleItemWishlist silent <line1>,<line2>call VimTodoListsToggleItemWishlist()

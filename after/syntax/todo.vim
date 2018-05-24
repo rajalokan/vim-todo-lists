@@ -9,6 +9,7 @@ syntax match vimTodoListsLabelWork '@work'
 syntax match vimTodoListsLabelOSS '@oss'
 syntax match vimTodoListsLabelPersonal '@personal'
 syntax match vimTodoListsLabelHousehold '@household'
+syntax match vimTodoListsLabelEstimate '$.* '
 
 highlight link vimTodoListsTodo Todo
 highlight link vimTodoListsDone Done
@@ -20,3 +21,4 @@ highlight link vimTodoListsLabelWork labelwork
 highlight link vimTodoListsLabelOSS labeloss
 highlight link vimTodoListsLabelPersonal labelpersonal
 highlight link vimTodoListsLabelHousehold labelhousehold
+highlight link vimTodoListsLabelEstimate labelestimate
