@@ -1,7 +1,7 @@
 "Syntax commands ordering is important due to order of the matching
-syntax match vimTodoListsTodo '^\s*\[ \].*[^@]+'
+syntax match vimTodoListsTodo '^\s*\[ \].*|'
 syntax match vimTodoListsDone '^\s*\[X\].*'
-syntax match vimTodoListsLater '^\s*\[L\].*'
+syntax match vimTodoListsLater /^\s*\[L\].*|/
 syntax match vimTodoListsWishlist '^\s*\[W\].*'
 syntax match vimTodoListsNotes '^\s*\[N\].*'
 syntax match vimTodoListsQuestions '^\s*\[?\].*'
