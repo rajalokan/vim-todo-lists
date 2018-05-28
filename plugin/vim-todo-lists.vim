@@ -24,7 +24,7 @@
 " Initializes plugin settings and mappings
 function! VimTodoListsInit()
   set filetype=todo
-  set foldlevel=0
+"  set foldlevel=0
   setlocal tabstop=2
   setlocal shiftwidth=2 expandtab
   setlocal cursorline
@@ -478,7 +478,7 @@ endfunction
 
 " Creates a new item above the current line
 function! VimTodoListsCreateNewItemAbove()
-  normal! O  [ ]    |
+  normal! O    [ ]    |
   normal! 06l
   startinsert!
 endfunction
@@ -486,7 +486,7 @@ endfunction
 
 " Creates a new item below the current line
 function! VimTodoListsCreateNewItemBelow()
-  normal! o  [ ]    |
+  normal! o    [ ]    |
   normal! 06l
   startinsert!
 endfunction
@@ -503,14 +503,24 @@ endfunction
 
 " Creates a new child below the current line
 function! VimTodoListsCreateNewChildItem()
-  normal! o      [ ]    |
-  startinsert!
+
+  let l:line = getline('.')
+  let l:split = split(l:line, ':')
+  let l:lineno = line('.')
+  let l:label = GetItemLabel(l:line)
+  if len(l:split) == 1
+    execute "normal! o" . split(l:line, '|')[0] . ":   | " . l:label . " \<Esc>F:2l"
+  else 
+    execute "normal! o" . l:split[0] . ":   | " . l:label . " \<Esc>F:2l"
+  endif
+  startinsert
+
 endfunction
 
 
 " Creates a new item in the current line
 function! VimTodoListsCreateNewItem()
-  normal! 0i  [ ]    |
+  normal! 0i    [ ]    |
   startinsert!
 endfunction
 

@@ -1,5 +1,5 @@
 "Syntax commands ordering is important due to order of the matching
-syntax match vimTodoListsTodo '^\s*\[ \].*|'
+syntax match vimTodoListsTodo /^\s*\[ \].*|/
 syntax match vimTodoListsDone '^\s*\[X\].*'
 syntax match vimTodoListsLater /^\s*\[L\].*|/
 syntax match vimTodoListsWishlist '^\s*\[W\].*'
@@ -9,7 +9,8 @@ syntax match vimTodoListsLabelWork '@work'
 syntax match vimTodoListsLabelOSS '@oss'
 syntax match vimTodoListsLabelPersonal '@personal'
 syntax match vimTodoListsLabelHousehold '@household'
-syntax match vimTodoListsLabelEstimate '$.* '
+syntax match vimTodoListsLabelEstimate '$\d*'
+syntax match vimTodoListsHeader '#\s\(TODO\|Later\|Done\|Wishlist\)'
 
 highlight link vimTodoListsTodo Todo
 highlight link vimTodoListsDone Done
@@ -22,3 +23,4 @@ highlight link vimTodoListsLabelOSS labeloss
 highlight link vimTodoListsLabelPersonal labelpersonal
 highlight link vimTodoListsLabelHousehold labelhousehold
 highlight link vimTodoListsLabelEstimate labelestimate
+highlight link vimTodoListsHeader Header
