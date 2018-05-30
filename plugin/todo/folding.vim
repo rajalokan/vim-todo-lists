@@ -1,43 +1,18 @@
 setlocal foldmethod=expr
+
 set fillchars=fold:\ 
 
 setlocal foldexpr=GetTodoFold(v:lnum)
-
-function! IndentLevel(lnum)
-    return indent(a:lnum) / &shiftwidth
-endfunction
-
-
-function! NextNonBlankLine(lnum)
-    let numlines = line('$')
-    let current = a:lnum + 1
-
-    while current <= numlines
-        if getline(current) =~? '\v\S'
-            return current
-        endif
-
-        let current += 1
-    endwhile
-
-    return -2
-endfunction
-
 
 function! GetTodoFold(lnum)
     if getline(a:lnum) =~? '\v^\s*$'
         return '-1'
     endif
 
-    let this_indent = IndentLevel(a:lnum)
-    let next_indent = IndentLevel(NextNonBlankLine(a:lnum))
-
-    if next_indent == this_indent
-        return this_indent
-    elseif next_indent < this_indent
-        return this_indent
-    elseif next_indent > this_indent
-        return '>' . next_indent
+    if getline(a:lnum) =~? '^.*:.*'
+        return '1'
+    elseif getline(a:lnum) =~? '^.*|.*'
+        return '0'
     endif
 
 endfunction
@@ -45,7 +20,7 @@ endfunction
 setlocal foldtext=TodoFoldText()
 
 function! TodoFoldText()
-    let line = getline(v:foldstart)
-    let n_lines = v:foldend - v:foldstart
-    return "+" . strpart(line, 1) . " (" . n_lines .")"
+    let l:line = getline(v:foldstart)
+    let l:n_lines = v:foldend - v:foldstart + 1
+    return "        +--- Sub Tasks (" . l:n_lines . ")"
 endfunction
