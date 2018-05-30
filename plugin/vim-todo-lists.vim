@@ -20,11 +20,12 @@
 " FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 " IN THE SOFTWARE.
 
-
 " Initializes plugin settings and mappings
 function! VimTodoListsInit()
   set filetype=todo
-"  set foldlevel=0
+  set foldlevel=0
+  set nonumber
+  set norelativenumber
   setlocal tabstop=2
   setlocal shiftwidth=2 expandtab
   setlocal cursorline
@@ -478,17 +479,17 @@ endfunction
 
 " Creates a new item above the current line
 function! VimTodoListsCreateNewItemAbove()
-  normal! O    [ ]    |
-  normal! 06l
-  startinsert!
+  " normal! O    [ ]    |
+  execute "normal! O    [ ]    |\<Esc>3h"
+  startinsert
 endfunction
 
 
 " Creates a new item below the current line
 function! VimTodoListsCreateNewItemBelow()
-  normal! o    [ ]    |
-  normal! 06l
-  startinsert!
+  " normal! o    [ ]    |
+  execute "normal! o    [ ]    |\<Esc>3h"
+  startinsert
 endfunction
 
 " Creates a new empty line above the current line
@@ -510,11 +511,10 @@ function! VimTodoListsCreateNewChildItem()
   let l:label = GetItemLabel(l:line)
   if len(l:split) == 1
     execute "normal! o" . split(l:line, '|')[0] . ":   | " . l:label . " \<Esc>F:2l"
-  else 
+  else
     execute "normal! o" . l:split[0] . ":   | " . l:label . " \<Esc>F:2l"
   endif
   startinsert
-
 endfunction
 
 
@@ -528,8 +528,8 @@ endfunction
 " Moves the cursor to the next item
 function! VimTodoListsGoToNextItem()
   normal! $
-  " exec '/^\s*\[.\]'
-  exec '/^\s*'
+  exec '/^\s*\[.\]'
+  " exec '/^\s*'
   silent! exec 'noh'
   normal! lll
 endfunction
@@ -538,8 +538,8 @@ endfunction
 " Moves the cursor to the previous item
 function! VimTodoListsGoToPreviousItem()
   normal! 0
-  " silent! exec '?^\s*\[.\]'
-  silent! exec '?^\s*'
+  silent! exec '?^\s*\[.\]'
+  " silent! exec '?^\s*'
   silent! exec 'noh'
   normal! lll
 endfunction
