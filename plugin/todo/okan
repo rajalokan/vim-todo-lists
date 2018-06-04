@@ -1,0 +1,11 @@
+function! IsTask(l:line)
+    return 1
+endfunction
+
+
+
+
+function! GetTaskType(l:line)
+    return 1
+endfunction
+
